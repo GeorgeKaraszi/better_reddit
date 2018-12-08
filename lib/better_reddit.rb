@@ -43,7 +43,3 @@ module BetterReddit
     end
   end
 end
-
-a = BetterReddit::Listings.newest("r/ruby")
-
-puts a

@@ -9,7 +9,7 @@ module BetterReddit
       def_delegators :@data, :dig, :method_missing
 
       def initialize(reddit_response)
-        raise Error::ClientInvalidResourceError unless reddit_response.is_a?(HTTP::Response)
+        raise Error::ClientInvalidResourceError unless reddit_response.respond_to?(:status)
 
         @raw_response = reddit_response
         @status       = @raw_response.status
