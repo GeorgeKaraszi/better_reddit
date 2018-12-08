@@ -10,8 +10,9 @@ Gem::Specification.new do |spec|
   spec.authors       = ["George J Protacio-Karaszi"]
   spec.email         = ["george@hellogeorge.io"]
 
-  spec.summary       = "A complete Reddit API client with all the bells and whistles. But none of the faraday or Net overhead"
-  spec.description   = "A complete Reddit API client with all the bells and whistles. But none of the faraday or Net overhead"
+  spec.summary       = "A complete Reddit API client with all the bells and whistles. But none of the faraday or "\
+                        "Net overhead"
+  spec.description   = spec.summary
   spec.homepage      = "https://github.com/GeorgeKaraszi/better_reddit"
   spec.license       = "MIT"
 
