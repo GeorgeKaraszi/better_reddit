@@ -1,0 +1,23 @@
+/.bundle/
+/.yardoc
+/_yardoc/
+/coverage/
+/doc/
+/pkg/
+/spec/reports/
+/tmp/
+/log/*
+.idea
+*.DS_Store
+
+## Environment configs
+.env.development
+.env.test
+*.env
+
+# Built gems
+*.gem
+
+
+# rspec failure tracking
+.rspec_status
