@@ -1,5 +1,3 @@
-require: rubocop-rspec
-
 AllCops:
   TargetRubyVersion: 2.4
   DisplayStyleGuide: true
@@ -9,26 +7,29 @@ AllCops:
 # [i] Overrides #
 #################
 
-CollectionMethods:
+Style/CollectionMethods:
   # Mapping from undesired method to desired_method
-  # e.g. to use `detect` over `find`:
+  # e.g. to use `detect` over `find` since find is a reserved AR keyword:
   #
   # CollectionMethods:
   #   PreferredMethods:
   #     find: detect
+  Enabled: true
   PreferredMethods:
-    reduce: 'inject'
-    find: 'detect'
+    find: detect
     each_with_index: 'each.with_index'
 
 # Align ends correctly.
 EndAlignment:
   EnforcedStyleAlignWith: variable
 
-LineLength:
+Metrics/LineLength:
   Max: 120
   Exclude:
-    - examples/**/*
+    - spec/**/*
+
+Layload/AlignHash:
+  EnforcedColonStyle: table
 
 BracesAroundHashParameters:
   EnforcedStyle: context_dependent
@@ -36,14 +37,42 @@ BracesAroundHashParameters:
 StringLiterals:
   EnforcedStyle: double_quotes
 
+Style/ClassAndModuleChildren:
+  EnforcedStyle: nested
+
+Style/RaiseArgs:
+  EnforcedStyle: compact
+
+Metrics/ModuleLength:
+  Exclude:
+    - spec/**/*
+
+# Spec's, tasks, config's, and the Gemfile cannot by design be reduced.
+# Thus excluding them makes logical sense
+
+Metrics/BlockLength:
+  Exclude:
+    - spec/**/*
+    - Gemfile
+
 Metrics/AbcSize:
-  Max: 18
+  Max: 23
+  Exclude:
+    - spec/**/*
+
+Lint/AmbiguousBlockAssociation:
+  Exclude:
+    - spec/**/*
+
+Style/SymbolArray:
+  EnforcedStyle: brackets
+
+Style/WordArray:
+  EnforcedStyle: brackets
 
 #################
 # Disabled cops #
 #################
-Metrics/ClassLength:
-  Enabled: false
 
 Metrics/CyclomaticComplexity:
   Enabled: false
@@ -51,14 +80,10 @@ Metrics/CyclomaticComplexity:
 Metrics/MethodLength:
   Enabled: false
 
-Metrics/BlockLength:
-  Exclude:
-    - spec/**/*
-
-Style/ClassAndModuleChildren:
+Style/Documentation:
   Enabled: false
 
-Style/Documentation:
+Naming/MemoizedInstanceVariableName:
   Enabled: false
 
 Style/Lambda:
@@ -67,21 +92,5 @@ Style/Lambda:
 Style/IfUnlessModifier:
   Enabled: false
 
-Style/TrailingCommaInArrayLiteral:
-  Enabled: true
-  EnforcedStyleForMultiline: comma
-
-Style/TrailingCommaInHashLiteral:
-  Enabled: true
-  EnforcedStyleForMultiline: comma
-
-Style/TrailingCommaInArguments:
-  Enabled: true
-  EnforcedStyleForMultiline: comma
-
 Style/GuardClause:
   Enabled: false
-
-Lint/AmbiguousBlockAssociation:
-  Exclude:
-    - spec/**/*
