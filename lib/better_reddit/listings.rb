@@ -10,5 +10,10 @@ module BetterReddit
               gilded: "%<resource_id>s/gilded.json"
 
     define_get_path_methods!
+
+    def initialize(sub_reddit, **args)
+      sub_reddit = "/r/#{sub_reddit}" unless sub_reddit.to_s.match?(%r{^\/?r\/})
+      super(sub_reddit, args)
+    end
   end
 end
