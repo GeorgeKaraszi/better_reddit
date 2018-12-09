@@ -64,7 +64,7 @@ module BetterReddit
 
       if hit_rate_limit?
         wait_for_limit!
-        raise StandardError.new("You hit the rate limit to many times")
+        raise Error::APIConnectionError.rate_limit
       end
     rescue StandardError
       retry_count ||= 0

@@ -5,8 +5,13 @@ require "better_reddit/error/standard_exception"
 module BetterReddit
   module Error
     class APIAuthorizationError < StandardException; end
-    class APIConnectionError < StandardException; end
     class APIInvalidRequestError < StandardException; end
+
+    class APIConnectionError < StandardException
+      def self.rate_limit
+        new("You've hit the rate limit for this API to many times")
+      end
+    end
 
     class ClientInvalidRequestError < StandardException; end
     class ClientInvalidResourceError < StandardException; end
