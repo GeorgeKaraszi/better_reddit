@@ -16,14 +16,16 @@ module BetterReddit
     end
 
     def self.default_conn
-      HTTP.headers("User-Agent" => "better-reddit API client by George P. [v.#{BetterReddit::VERSION}]")
-          .accept("application/json")
-          .follow
-          .timeout(
-            connect: BetterReddit.connect_timeout,
-            write:   BetterReddit.write_timeout,
-            read:    BetterReddit.read_timeout
-          )
+      Thread.current[:default_conn] ||= begin
+        HTTP.headers("User-Agent" => "better-reddit API client by George P. [v.#{BetterReddit::VERSION}]")
+            .accept("application/json")
+            .follow
+            .timeout(
+              connect: BetterReddit.connect_timeout,
+              write:   BetterReddit.write_timeout,
+              read:    BetterReddit.read_timeout
+            )
+      end
     end
 
     def initialize(conn = nil)
