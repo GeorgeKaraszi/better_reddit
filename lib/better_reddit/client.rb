@@ -3,7 +3,9 @@
 module BetterReddit
   class Client
     attr_accessor :conn
-    attr_reader   :response
+    attr_reader   :response, :response_body
+
+    AUTH_PATH = "/api/login.json"
 
     def self.active_client
       Thread.current[:reddit_client] || default_client
@@ -14,24 +16,28 @@ module BetterReddit
     end
 
     def self.default_conn
-      Thread.current[:reddit_default_conn] ||= begin
-        HTTP.headers("User-Agent" => "better-reddit API client by George P. [v.#{BetterReddit::VERSION}]")
-            .accept("application/json")
-            .follow
-            .timeout(
-              connect: BetterReddit.connect_timeout,
-              write:   BetterReddit.write_timeout,
-              read:    BetterReddit.read_timeout
-            )
-      end
+      HTTP.headers("User-Agent" => "better-reddit API client by George P. [v.#{BetterReddit::VERSION}]")
+          .accept("application/json")
+          .follow
+          .timeout(
+            connect: BetterReddit.connect_timeout,
+            write:   BetterReddit.write_timeout,
+            read:    BetterReddit.read_timeout
+          )
     end
 
     def initialize(conn = nil)
       @conn = conn || self.class.default_conn
     end
 
-    def request(verb_method, path, params = {})
-      capture_response! { send(verb_method.to_sym, destination_url(path), params) }
+    def authenticate!(username, password)
+      request!(:post, AUTH_PATH, user: username, passwd: password)
+      @conn = @conn.cookies(@response.cookies)
+      self
+    end
+
+    def request!(verb_method, path, params = {})
+      capture_response!(verb_method.to_sym, path, params, BetterReddit.retry_attempts)
       raise_status_error! unless @response.status.success?
       self
     end
@@ -41,11 +47,23 @@ module BetterReddit
 
       Response::RedditDecoder.new(@response)
     end
+    alias parse decode_response
 
     protected
 
-    def capture_response!(retry_count = 2)
-      @response = yield
+    def capture_response!(verb, path, params, retry_count = 2)
+      @response = with_persisted_connection! do |http|
+        if verb == :get
+          http.request(verb, path, params: params)
+        else
+          http.request(verb, path, form: params)
+        end.flush
+      end
+
+      if hit_rate_limit?
+        wait_for_limit!
+        raise StandardError.new("You hit the rate limit to many times")
+      end
     rescue StandardError
       retry_count ||= 0
       retry_count -= 1
@@ -53,27 +71,26 @@ module BetterReddit
       raise
     end
 
-    def get(url, params = {})
-      @conn.get(url, params: params)
-    end
-
-    def post(url, params = {})
-      @conn.post(url, json: params)
-    end
-
-    def patch(url, params = {})
-      @conn.patch(url, json: params)
-    end
-
-    def put(url, params = {})
-      @conn.put(url, json: params)
-    end
-
-    def delete(url, params = {})
-      @conn.delete(url, json: params)
-    end
-
     private
+
+    def with_persisted_connection!
+      @conn.persistent(BetterReddit.reddit_url) do |http|
+        yield(http)
+      end
+    end
+
+    def hit_rate_limit?
+      return unless BetterReddit.wait_for_rate_limit?
+
+      remaining_limit = @response.headers["X-Ratelimit-Remaining"]
+      !remaining_limit.nil? && remaining_limit.to_i.zero?
+    end
+
+    def wait_for_limit!
+      return unless BetterReddit.wait_for_rate_limit?
+
+      sleep @response.headers["X-Ratelimit-Reset"].to_i
+    end
 
     def raise_status_error!
       return unless BetterReddit.raise_http_errors?
@@ -88,10 +105,9 @@ module BetterReddit
       end
     end
 
-    def destination_url(path)
-      path = path.start_with?("/")   ? path : "/#{path}"
-      path = path.end_with?(".json") ? path : "#{path}.json"
-      "#{BetterReddit.reddit_url}#{path}"
+    def destination_path(path)
+      path = "/#{path}" unless path.start_with?("/")
+      path.end_with?(".json") ? path : "#{path}.json"
     end
   end
 end

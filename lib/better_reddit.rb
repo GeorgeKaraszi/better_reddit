@@ -22,17 +22,18 @@ require "better_reddit/api_resource"
 require "better_reddit/listings"
 
 module BetterReddit
-  @enabled            = true
-  @raise_http_errors  = true
-  @write_timeout      = 5
-  @read_timeout       = 5
-  @connect_timeout    = 5
-  @retry_attempts     = 2
-  @reddit_url         = "https://ssl.reddit.com"
+  @enabled             = true
+  @raise_http_errors   = true
+  @wait_for_rate_limit = true
+  @write_timeout       = 5
+  @read_timeout        = 5
+  @connect_timeout     = 5
+  @retry_attempts      = 2
+  @reddit_url          = "https://ssl.reddit.com"
 
   class << self
     attr_accessor :enabled, :write_timeout, :read_timeout, :connect_timeout,
-                  :raise_http_errors, :reddit_url, :retry_attempts
+                  :raise_http_errors, :reddit_url, :retry_attempts, :wait_for_rate_limit
 
     def enabled?
       @enabled
@@ -40,6 +41,10 @@ module BetterReddit
 
     def raise_http_errors?
       @raise_http_errors
+    end
+
+    def wait_for_rate_limit?
+      @wait_for_rate_limit
     end
   end
 end

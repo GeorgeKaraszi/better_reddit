@@ -4,21 +4,20 @@ module BetterReddit
   module Response
     class RedditDecoder
       extend Forwardable
-      attr_reader :raw_response, :data, :status
+      attr_reader :body, :response
 
-      def_delegators :@data, :dig, :method_missing
+      def_delegators :@response, :headers, :status
+      def_delegators :@body, :dig, :method_missing
 
       def initialize(reddit_response)
         raise Error::ClientInvalidResourceError unless reddit_response.respond_to?(:status)
 
-        @raw_response = reddit_response
-        @status       = @raw_response.status
-        @data         = Oj.sc_parse(RedditObjectParser.new, @raw_response.to_s).freeze
-        freeze
+        @response = reddit_response.dup
+        @body     = Oj.sc_parse(RedditObjectParser.new, @response.to_s).freeze
       end
 
       def valid?
-        @status.success?
+        status.success?
       end
 
       def invalid?
@@ -26,7 +25,7 @@ module BetterReddit
       end
 
       def inspect
-        "#<#{self.class}:0x#{object_id.to_s(16)}> @status=#{@status.inspect} @data=#{@data.inspect}"
+        "#<#{self.class}:0x#{object_id.to_s(16)}> status=#{status.inspect} @body=#{@body.inspect}"
       end
       alias to_s inspect
 

@@ -6,7 +6,7 @@ module BetterReddit
       extend Forwardable
 
       def method_missing(method_name, *args, &blk)
-        if @table.respond_to?(method_name)
+        if @table.respond_to?(method_name, false)
           @table.public_send(method_name, *args, &blk)
         else
           prefixed_method = method_name.to_s.chomp!("?")
@@ -15,7 +15,7 @@ module BetterReddit
       end
 
       def respond_to_missing?(method_name, include_all)
-        method_name.to_s.end_with?("?") || @table.respond_to?(method_name) || super
+        method_name.to_s.end_with?("?") || @table.respond_to?(method_name, false) || super
       end
     end
   end
